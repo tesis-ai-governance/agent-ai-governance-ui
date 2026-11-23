@@ -114,7 +114,7 @@ export function renderOpsDrawer(state,ui){
    ${select('Classification','type',options,current?.type||t.type)}
    ${select('Decision','decision',[['approved','Approve for catalog'],['rejected','Reject'],['pending','Keep pending']],current?.decision||t.reviewStatus||(t.approved?'approved':'pending'))}
    ${select('Supervision','supervision',[['autonomous','Autonomous'],['notify','Notify'],['approval','Human approval before execution']],current?.supervision||t.supervision||'autonomous')}
-   ${field('Reviewer name (demo)','reviewer',current?.reviewer||t.reviewedBy||'','text','required maxlength="80" placeholder="Name entered for this mock review"')}
+   ${field('Reviewer name (demo)','reviewer',current?.reviewer||t.reviewedBy||'Demo Operator','text','required maxlength="80" placeholder="Name entered for this mock review"')}
    <p class="micro muted">The reviewer name is entered manually and is not authenticated. Human approval only works for tool calls routed through the execution gateway.</p>
    ${ui.opError?`<p class="op-error" role="alert">${e(ui.opError)}</p>`:''}
    <div class="modal-actions"><button type="submit" class="btn primary">Review changes</button></div></form>`;
