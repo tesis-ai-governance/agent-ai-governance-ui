@@ -268,9 +268,9 @@ export function handleOpsSubmit(state,ui,form){
  }
  case 'op-agent-settings-form':{
    if(!a)return fail('Agent not found');
-   if(!['message','error_http'].includes(data.blockStyle)||!['block','shadow'].includes(data.guardrailDiscovery)||!['none','offer'].includes(data.guardrailRecommendation)||!['auto','reject','degrade'].includes(data.invalidUserToken))return fail('Choose valid request handling settings');
+   if(!['message','error_http'].includes(data.blockStyle)||!['block','shadow'].includes(data.guardrailDiscovery)||!['auto','reject','degrade'].includes(data.invalidUserToken))return fail('Choose valid request handling settings');
    const before={blockStyle:a.blockStyle||'message',guardrailDiscovery:a.guardrailDiscovery||'block',guardrailRecommendation:a.guardrailRecommendation||'none',invalidUserToken:a.invalidUserToken||'auto',acceptedClients:a.acceptedClients||[],hasHumanUsers:a.hasHumanUsers!==false};
-   const next={blockStyle:data.blockStyle,guardrailDiscovery:data.guardrailDiscovery,guardrailRecommendation:data.guardrailRecommendation,invalidUserToken:data.invalidUserToken,acceptedClients:String(data.acceptedClients||'').split(',').map(x=>x.trim()).filter(Boolean).slice(0,30),hasHumanUsers:fd.has('hasHumanUsers')};
+   const next={blockStyle:data.blockStyle,guardrailDiscovery:data.guardrailDiscovery,guardrailRecommendation:data.guardrailRecommendation==='offer'?'offer':'none',invalidUserToken:data.invalidUserToken,acceptedClients:String(data.acceptedClients||'').split(',').map(x=>x.trim()).filter(Boolean).slice(0,30),hasHumanUsers:fd.has('hasHumanUsers')};
    Object.assign(a,next);changeRecord(state,'Request handling',a.id,a.name,before,next);return close('Request handling settings saved');
  }
  case 'op-models-form':{
