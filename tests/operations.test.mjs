@@ -8,13 +8,18 @@ import {renderOpsDrawer,renderOpsModal,renderAgentOperations,handleOpsClick} fro
 test('Tool review transitions state, preserves routing and records before/after',()=>{
  const state=cleanState();const tool=toolById(state,'t3');
  assert.equal(tool.approved,false);
- assert.ok(reviseTool(state,'t3',{type:'Critical',decision:'approved',supervision:'approval',expectedVersion:1}));
+ assert.ok(reviseTool(state,'t3',{type:'Critical',decision:'approved',supervision:'approval',expectedVersion:1,reviewer:'Alex Rivera'}));
  assert.equal(tool.approved,true);
  assert.equal(tool.classification,'confirmed');
  assert.equal(tool.control,'B');
  assert.equal(state.changes.length,1);
  assert.equal(state.changes[0].from.approved,false);
  assert.equal(state.changes[0].to.decision,'approved');
+ assert.equal(tool.reviewedBy,'Alex Rivera');
+ assert.match(tool.reviewedAt,/^\d{4}-\d\d-\d\dT/);
+ assert.equal(state.changes[0].to.reviewedBy,'Alex Rivera');
+ assert.equal(state.changes[0].to.reviewedAt,tool.reviewedAt);
+ assert.equal(safeReadState(JSON.stringify(state)).tools.find(t=>t.id==='t3').reviewedBy,'Alex Rivera');
  assert.equal(toolOperationalStatus(agentById(state,'atlas'),tool).key,'approval');
 });
 
@@ -27,7 +32,7 @@ test('Stale tool schema version does not silently overwrite an operator decision
 test('Local tool approval never changes the execution boundary',()=>{
  const state=cleanState();const tool=toolById(state,'t7');
  assert.equal(reviseTool(state,'t7',{type:'Critical',decision:'approved',supervision:'approval',expectedVersion:1}),false);
- assert.ok(reviseTool(state,'t7',{type:'Critical',decision:'approved',supervision:'autonomous',expectedVersion:1}));
+ assert.ok(reviseTool(state,'t7',{type:'Critical',decision:'approved',supervision:'autonomous',expectedVersion:1,reviewer:'Operator Test'}));
  assert.equal(toolOperationalStatus(agentById(state,'invoice'),tool).key,'outside');
  assert.equal(appendScenario(state,{agentId:'invoice',toolId:'t7',channel:'tool'}).status,'outside');
 });
@@ -80,10 +85,11 @@ test('Auditor sees tool schema but cannot render edit form or simulate a schema 
 
 test('Tool-review modal explicitly names the tool and intended decision',()=>{
  const state=cleanState();
- const ui={modal:{kind:'op-tool-confirm',id:'t3'},toolDraft:{id:'t3',type:'Critical',decision:'approved',supervision:'approval',expectedVersion:1}};
+ const ui={modal:{kind:'op-tool-confirm',id:'t3'},toolDraft:{id:'t3',type:'Critical',decision:'approved',supervision:'approval',reviewer:'Alex Rivera',expectedVersion:1}};
  const html=renderOpsModal(state,ui);
  assert.match(html,/Delete customer record/);
  assert.match(html,/Confirm review/);
+ assert.match(html,/Reviewer \(demo, unverified\): Alex Rivera/);
  assert.match(html,/Local tools remain outside the execution gateway/);
  assert.equal(toolById(state,'t3').approved,false);
 });
@@ -106,4 +112,16 @@ test('Search filters combine model, connection, channel and user at the same tim
 test('Static build retains all runtime modules, including new operations workflows',()=>{
  const build=readFileSync(new URL('../scripts/build.mjs',import.meta.url),'utf8');
  assert.match(build,/src\/operations\.js/);
+});
+
+test('Tool review requires a named demo reviewer and displays local review metadata',()=>{
+ const state=cleanState();
+ assert.equal(reviseTool(state,'t3',{type:'Critical',decision:'approved',supervision:'approval',expectedVersion:1}),false);
+ assert.equal(state.changes.length,0);
+ const drawer=renderOpsDrawer(state,{drawer:{kind:'op-tool',id:'t3'}});
+ assert.match(drawer,/Reviewer name \(demo\)/);
+ assert.match(drawer,/name="reviewer"[^>]*required/);
+ assert.match(drawer,/Reviewed by \(demo\)/);
+ assert.match(drawer,/Not recorded/);
+ assert.match(drawer,/is not authenticated/);
 });
