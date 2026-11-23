@@ -121,6 +121,7 @@ test('Tool review requires a named demo reviewer and displays local review metad
  const drawer=renderOpsDrawer(state,{drawer:{kind:'op-tool',id:'t3'}});
  assert.match(drawer,/Reviewer name \(demo\)/);
  assert.match(drawer,/name="reviewer"[^>]*required/);
+ assert.match(drawer,/value="Demo Operator"/);
  assert.match(drawer,/Reviewed by \(demo\)/);
  assert.match(drawer,/Not recorded/);
  assert.match(drawer,/is not authenticated/);
