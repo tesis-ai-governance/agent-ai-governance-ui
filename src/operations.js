@@ -114,17 +114,21 @@ export function renderOpsDrawer(state,ui){
    ${select('Classification','type',options,current?.type||t.type)}
    ${select('Decision','decision',[['approved','Approve for catalog'],['rejected','Reject'],['pending','Keep pending']],current?.decision||t.reviewStatus||(t.approved?'approved':'pending'))}
    ${select('Supervision','supervision',[['autonomous','Autonomous'],['notify','Notify'],['approval','Human approval before execution']],current?.supervision||t.supervision||'autonomous')}
-   <p class="micro muted">Human approval only works for tool calls routed through the execution gateway.</p>
+   ${field('Reviewer name (demo)','reviewer',current?.reviewer||t.reviewedBy||'','text','required maxlength="80" placeholder="Name entered for this mock review"')}
+   <p class="micro muted">The reviewer name is entered manually and is not authenticated. Human approval only works for tool calls routed through the execution gateway.</p>
+   ${ui.opError?`<p class="op-error" role="alert">${e(ui.opError)}</p>`:''}
    <div class="modal-actions"><button type="submit" class="btn primary">Review changes</button></div></form>`;
   const content=`<div class="op-attribute"><span>Agent</span><a class="text-link" href="${linkAgent(agent)}">${e(agent.name)}</a></div>
   <div class="op-attribute"><span>Execution</span><strong>${e(status.label)}</strong></div>
   <div class="op-attribute"><span>Suggested class</span><strong>${e(t.type)} · ${e(t.classification||'suggested')}</strong></div>
   <div class="op-attribute"><span>Review status</span><strong>${e(t.reviewStatus|| (t.approved?'approved (suggested)':'pending'))}</strong></div>
+  <div class="op-attribute"><span>Reviewed by (demo)</span><strong>${e(t.reviewedBy||'Not recorded')}</strong></div>
+  <div class="op-attribute"><span>Reviewed on</span><strong>${e(t.reviewedAt||'Not recorded')}</strong></div>
   <div class="op-attribute"><span>Schema</span><strong>Version ${t.schemaVersion||1}</strong></div>
   <pre class="op-pre">${e(pretty(t.schema||{}))}</pre>
   ${t.control!=='B'||!hasConnection(agent,'B')?`<div class="tip">${I('unplug',16)} Tool execution is outside the gateway, regardless of approval.</div>`:''}
   ${canEdit(state)&&agent.mode!=='retired'?`<h3>Review tool</h3>${review}`:info('Auditors can inspect, but cannot change tools.')}
-  <h3>Change history</h3>${state.changes.filter(c=>c.agent===t.agent&&c.resource===t.name).slice(0,5).map(c=>`<p class="micro">${e(c.kind)} · ${e(c.actor)} · ${e(c.time)}</p>`).join('')||info('No changes recorded yet.')}
+  <h3>Change history</h3>${state.changes.filter(c=>c.agent===t.agent&&c.resource===t.name).slice(0,5).map(c=>`<p class="micro">${e(c.kind)} · ${e(c.to?.reviewedBy?`Demo reviewer: ${c.to.reviewedBy}`:c.actor)} · ${e(c.to?.reviewedAt||c.time)}</p>`).join('')||info('No changes recorded yet.')}
   <h3>Recent use</h3>${state.events.filter(ev=>ev.agent===t.agent&&ev.action===t.name).slice(0,3).map(ev=>`<p class="micro">${e(ev.id)} · ${e(ev.status)}</p>`).join('')||info('No requests recorded yet.')}
 
   `;
@@ -160,7 +164,7 @@ export function renderOpsModal(state,ui){
  const a=agentById(state,m.id);const tool=toolById(state,m.id);
  if(m.kind==='op-tool-confirm'){
   const d=ui.toolDraft;if(!d||!tool)return '';
-  return modal('Apply tool review?',`<p>Tool: <strong>${e(tool.name)}</strong> · ${e(agentName(state,tool.agent))}</p><p>Class: ${e(d.type)} · Decision: ${e(d.decision)} · Supervision: ${e(d.supervision)}</p><p class="micro muted">Local tools remain outside the execution gateway.</p>`,`${button('Back','op-back-tool')}${button('Confirm review','op-confirm-tool','', 'primary')}`);
+  return modal('Apply tool review?',`<p>Tool: <strong>${e(tool.name)}</strong> · ${e(agentName(state,tool.agent))}</p><p>Class: ${e(d.type)} · Decision: ${e(d.decision)} · Supervision: ${e(d.supervision)}</p><p>Reviewer (demo, unverified): ${e(d.reviewer)}</p><p class="micro muted">Local tools remain outside the execution gateway.</p>`,`${button('Back','op-back-tool')}${button('Confirm review','op-confirm-tool','', 'primary')}`);
  }
  if(m.kind==='op-agent-edit'&&a){return formModal('Edit agent details',`<form id="op-agent-form" data-id="${e(a.id)}">${field('Name','name',a.name,'text','required maxlength="54"')}${field('Owner','owner',a.owner,'text','required maxlength="54"')}${field('Team','team',a.team,'text','required maxlength="54"')}${field('Description','description',a.description||'')}${field('Version','version',a.version||'1.0.0')}${ui.opError?`<p class="op-error" role="alert">${e(ui.opError)}</p>`:''}${formActions('Save details')}</form>`);}
  if(m.kind==='op-agent-settings'&&a){
@@ -254,7 +258,8 @@ export function handleOpsSubmit(state,ui,form){
  switch(id){
  case 'op-tool-form':{
    const tool=toolById(state,agentId);if(!tool)return fail('Tool not found');
-   ui.toolDraft={id:tool.id,type:data.type,decision:data.decision,supervision:data.supervision,expectedVersion:Number(data.expectedVersion)};
+   if(!data.reviewer?.trim()||data.reviewer.trim().length>80)return fail('Enter a reviewer name (up to 80 characters) for the demo');
+   ui.toolDraft={id:tool.id,type:data.type,decision:data.decision,supervision:data.supervision,reviewer:data.reviewer.trim(),expectedVersion:Number(data.expectedVersion)};
    ui.modal={kind:'op-tool-confirm',id:tool.id};return handled();
  }
  case 'op-agent-form':{
