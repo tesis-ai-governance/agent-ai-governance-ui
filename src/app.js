@@ -245,7 +245,7 @@ function setupEvents(){
     state.agents.push(record);state.credentials[id]={version:1,revoked:0,issuedTotal:0,active:[]};stageCredential(state.credentials,id,issued.record);
     changeRecord(state,'Agent registered',id,name,null,{...record,credentialId:issued.record.id});
     state.selectedAgent=id;if(!persist())return;
-    ui.credentialReceipt={agentId:id,token:issued.token};ui.modal={kind:'new-agent-key',id};render({focusOverlay:true,keepScroll:true});announce('Agent created');
+    ui.credentialReceipt={agentId:id,token:issued.token};ui.modal={kind:'new-agent-key',id};render({focusOverlay:true,keepScroll:true});announce('Agent added');
   } else if(event.target.getAttribute('id')==='budget-form'){
     event.preventDefault();if(!allowEdit())return;
     const fd=new FormData(event.target);const agent=agentById(state,fd.get('id'));const num=Number(fd.get('budget'));

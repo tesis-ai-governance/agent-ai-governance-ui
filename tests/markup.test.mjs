@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {cleanState} from '../src/domain.js';
-import {renderAppShell,renderPage} from '../src/views.js';
+import {renderAppShell,renderPage,renderModal} from '../src/views.js';
 const state=cleanState();
 const ui={activityAgent:'all',activityStatus:'all',catalogTab:'agents',rulesAgent:'atlas',connectionSearch:''};
 const html=route=>renderAppShell(state,ui,route,renderPage(state,ui,route));
@@ -54,4 +54,15 @@ test('Semantic tokens control palette and dark appearance',()=>{
 test('Static build does not require external network packages',()=>{
  const pkg=JSON.parse(readFileSync(new URL('../package.json',import.meta.url),'utf8'));
  assert.equal(pkg.dependencies,undefined);assert.equal(pkg.devDependencies,undefined);
+});
+
+test('Adding an existing agent never claims the workspace creates the agent',()=>{
+ const state=cleanState();
+ const add=renderModal(state,{modal:{kind:'add-agent'}});
+ assert.match(add,/Register an existing agent/);
+ assert.match(add,/>Add agent/);
+ assert.doesNotMatch(add,/Create agent|Create an agent/i);
+ const receipt=renderModal(state,{modal:{kind:'new-agent-key',id:'atlas'},credentialReceipt:{agentId:'atlas',token:'gov_test_example'}});
+ assert.match(receipt,/Agent added/);
+ assert.doesNotMatch(receipt,/Agent created/);
 });

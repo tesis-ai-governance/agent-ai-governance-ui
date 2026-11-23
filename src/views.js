@@ -326,7 +326,7 @@ export function renderModal(state,ui){
   const m=ui.modal;
   if(m.kind==='add-agent'){
     const modelChoices=sampleModels.map(model=>`<label class="op-check"><input type="checkbox" name="model" value="${safe(model.name)}" checked><span>${safe(model.name)}</span></label>`).join('');
-    return modalShell('Add an agent','plus',`<p>Create an agent and configure how it connects to the model gateway.</p><form id="new-agent-form"><div class="field-group"><label for="new-agent-name" class="field-label">Agent name</label><input class="field-input" id="new-agent-name" name="name" placeholder="e.g. Research Assistant" maxlength="54" required autofocus></div><div class="field-group"><label for="new-agent-owner" class="field-label">Owner</label><input class="field-input" id="new-agent-owner" name="owner" placeholder="Responsible person" maxlength="54" required></div>
+    return modalShell('Add an agent','plus',`<p>Register an existing agent and configure its proposed model connection.</p><form id="new-agent-form"><div class="field-group"><label for="new-agent-name" class="field-label">Agent name</label><input class="field-input" id="new-agent-name" name="name" placeholder="e.g. Research Assistant" maxlength="54" required autofocus></div><div class="field-group"><label for="new-agent-owner" class="field-label">Owner</label><input class="field-input" id="new-agent-owner" name="owner" placeholder="Responsible person" maxlength="54" required></div>
     <details class="onboarding-advanced"><summary>Additional agent settings</summary><div class="onboarding-fields">
     <label class="field-group"><span class="field-label">Team</span><input class="field-input" name="team" maxlength="54" placeholder="Team name"></label>
     <label class="field-group"><span class="field-label">Description</span><textarea class="field-input op-textarea" name="description" maxlength="200" rows="2"></textarea></label>
@@ -341,7 +341,7 @@ export function renderModal(state,ui){
     <label class="op-check"><input type="checkbox" name="hasHumanUsers" checked><span>Used by people</span></label>
     </div></details>
     <p class="field-help">New agents start in Observe mode. The connection details are shown after registration.</p>
-    <div class="modal-actions">${btn('Cancel','close-overlay')}<button class="btn primary" type="submit">Create agent ${I('arrow',15)}</button></div></form>`, '');
+    <div class="modal-actions">${btn('Cancel','close-overlay')}<button class="btn primary" type="submit">Add agent ${I('arrow',15)}</button></div></form>`, '');
   }
   if(m.kind==='new-agent-key'||m.kind==='agent-credential-receipt'){
     const a=agentById(state,m.id),receipt=ui.credentialReceipt?.agentId===m.id?ui.credentialReceipt:null;
@@ -352,7 +352,7 @@ export function renderModal(state,ui){
       <div class="credential-copy-field"><input class="field-input mono" id="${fieldId}" readonly value="${safe(value)}">
         ${action?`<button class="credential-copy-button" type="button" data-action="${action}" title="Copy ${label}" aria-label="Copy ${label}">${I('copy',18)}</button>`:''}
       </div></div>`;
-    return modalShell(m.kind==='new-agent-key'?'Agent created':'Credential rotated','check',
+    return modalShell(m.kind==='new-agent-key'?'Agent added':'Credential rotated','check',
       `<p class="credential-receipt-agent"><strong>${safe(a.name)}</strong> · Connection details</p>
        <div class="onboarding-receipt">
          ${copyControl('Base URL','agent-base-url',inferenceBaseUrl(),'copy-agent-url')}
