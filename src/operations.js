@@ -166,7 +166,10 @@ export function renderOpsModal(state,ui){
  if(m.kind==='op-agent-settings'&&a){
   return formModal(`${a.name} · request handling`,`<form id="op-agent-settings-form" data-id="${e(a.id)}">
     ${select('Blocked action response','blockStyle',[['message','Model message'],['error_http','HTTP error']],a.blockStyle||'message')}
-    ${select('Guardrail in Observe mode','guardrailDiscovery',[['block','Block harmful content'],['shadow','Observe only']],a.guardrailDiscovery||'block')}
+    ${select('Proposed guardrail handling (demo)','guardrailDiscovery',[['block','Show blocked outcome'],['shadow','Observe only']],a.guardrailDiscovery||'block')}
+    <p class="micro muted">Existing guardrails: Not assessed. This demo does not inspect provider settings.</p>
+    ${select('Additional guardrails (optional)','guardrailRecommendation',[['none','No additional protection proposed'],['offer','Offer protection for review']],a.guardrailRecommendation||'none')}
+    <p class="micro muted">This option stores a proposal only; it does not discover or activate guardrails.</p>
     ${select('Invalid user token','invalidUserToken',[['auto','Use mode default'],['reject','Reject request'],['degrade','Continue as agent']],a.invalidUserToken||'auto')}
     ${field('Accepted OIDC client IDs','acceptedClients',(a.acceptedClients||[]).join(', '),'text','placeholder="Comma-separated client IDs"')}
     <label class="op-check"><input type="checkbox" name="hasHumanUsers" ${a.hasHumanUsers!==false?'checked':''}><span>This agent serves human users</span></label>
@@ -265,9 +268,9 @@ export function handleOpsSubmit(state,ui,form){
  }
  case 'op-agent-settings-form':{
    if(!a)return fail('Agent not found');
-   if(!['message','error_http'].includes(data.blockStyle)||!['block','shadow'].includes(data.guardrailDiscovery)||!['auto','reject','degrade'].includes(data.invalidUserToken))return fail('Choose valid request handling settings');
-   const before={blockStyle:a.blockStyle||'message',guardrailDiscovery:a.guardrailDiscovery||'block',invalidUserToken:a.invalidUserToken||'auto',acceptedClients:a.acceptedClients||[],hasHumanUsers:a.hasHumanUsers!==false};
-   const next={blockStyle:data.blockStyle,guardrailDiscovery:data.guardrailDiscovery,invalidUserToken:data.invalidUserToken,acceptedClients:String(data.acceptedClients||'').split(',').map(x=>x.trim()).filter(Boolean).slice(0,30),hasHumanUsers:fd.has('hasHumanUsers')};
+   if(!['message','error_http'].includes(data.blockStyle)||!['block','shadow'].includes(data.guardrailDiscovery)||!['none','offer'].includes(data.guardrailRecommendation)||!['auto','reject','degrade'].includes(data.invalidUserToken))return fail('Choose valid request handling settings');
+   const before={blockStyle:a.blockStyle||'message',guardrailDiscovery:a.guardrailDiscovery||'block',guardrailRecommendation:a.guardrailRecommendation||'none',invalidUserToken:a.invalidUserToken||'auto',acceptedClients:a.acceptedClients||[],hasHumanUsers:a.hasHumanUsers!==false};
+   const next={blockStyle:data.blockStyle,guardrailDiscovery:data.guardrailDiscovery,guardrailRecommendation:data.guardrailRecommendation,invalidUserToken:data.invalidUserToken,acceptedClients:String(data.acceptedClients||'').split(',').map(x=>x.trim()).filter(Boolean).slice(0,30),hasHumanUsers:fd.has('hasHumanUsers')};
    Object.assign(a,next);changeRecord(state,'Request handling',a.id,a.name,before,next);return close('Request handling settings saved');
  }
  case 'op-models-form':{
