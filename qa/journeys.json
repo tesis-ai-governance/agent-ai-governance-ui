@@ -134,7 +134,7 @@
         {
           "type": "text",
           "selector": ".modal-card",
-          "contains": "Agent created"
+          "contains": "Agent added"
         },
         {
           "type": "state",
