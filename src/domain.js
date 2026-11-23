@@ -241,9 +241,12 @@ export function reviseTool(state,id,change){
  const tool=toolById(state,id);if(!tool||agentById(state,tool.agent)?.mode==='retired'||!['Read','Write','Critical','Unclassified'].includes(change.type)||!['approved','rejected','pending'].includes(change.decision)||!['autonomous','notify','approval'].includes(change.supervision))return false;
  if(tool.schemaVersion!==Number(change.expectedVersion))return false;
  if(change.supervision==='approval'&&tool.control!=='B')return false;
- const before={type:tool.type,approved:tool.approved,reviewStatus:tool.reviewStatus||'pending',classification:tool.classification||'suggested',supervision:tool.supervision,schemaVersion:tool.schemaVersion};
- Object.assign(tool,{type:change.type,approved:change.decision==='approved',reviewStatus:change.decision,classification:'confirmed',supervision:change.supervision});
- changeRecord(state,'Tool review',tool.agent,tool.name,before,{...before,...change});return true;
+ const reviewer=String(change.reviewer||'').trim();
+ if(!reviewer||reviewer.length>80)return false;
+ const reviewedAt=new Date().toISOString();
+ const before={type:tool.type,approved:tool.approved,reviewStatus:tool.reviewStatus||'pending',classification:tool.classification||'suggested',supervision:tool.supervision,schemaVersion:tool.schemaVersion,reviewedBy:tool.reviewedBy||null,reviewedAt:tool.reviewedAt||null};
+ Object.assign(tool,{type:change.type,approved:change.decision==='approved',reviewStatus:change.decision,classification:'confirmed',supervision:change.supervision,reviewedBy:reviewer,reviewedAt});
+ changeRecord(state,'Tool review',tool.agent,tool.name,before,{...before,...change,reviewedBy:reviewer,reviewedAt});return true;
 }
 export function addRule(state,agentId,rule){
  if(!canEdit(state)||!agentById(state,agentId))return {error:'No permission or agent'};
