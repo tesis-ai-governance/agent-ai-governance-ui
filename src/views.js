@@ -335,7 +335,9 @@ export function renderModal(state,ui){
     <fieldset class="onboarding-models"><legend>Allowed models</legend>${modelChoices}</fieldset>
     <label class="field-group"><span class="field-label">Daily budget (USD)</span><input class="field-input" type="number" name="budget" min="1" max="100000" step="1" value="25"></label>
     <label class="field-group"><span class="field-label">Blocked tool response</span><select class="field-select" name="blockStyle"><option value="message">Model message</option><option value="error_http">HTTP error</option></select></label>
-    <label class="field-group"><span class="field-label">Guardrail in Observe mode</span><select class="field-select" name="guardrailDiscovery"><option value="block">Block harmful content</option><option value="shadow">Observe only</option></select></label>
+    <label class="field-group"><span class="field-label">Proposed guardrail handling (demo)</span><select class="field-select" name="guardrailDiscovery"><option value="block">Show blocked outcome</option><option value="shadow">Observe only</option></select></label>
+    <p class="micro muted">Existing guardrails: Not assessed. This demo does not inspect provider settings.</p>
+    <label class="field-group"><span class="field-label">Additional guardrails (optional)</span><select class="field-select" name="guardrailRecommendation"><option value="none">No additional protection proposed</option><option value="offer">Offer protection for review</option></select></label>
     <label class="field-group"><span class="field-label">Invalid user token</span><select class="field-select" name="invalidUserToken"><option value="auto">Use mode default</option><option value="reject">Reject</option><option value="degrade">Continue as agent</option></select></label>
     <label class="field-group"><span class="field-label">Accepted OIDC client IDs (optional)</span><input class="field-input" name="acceptedClients" placeholder="Comma-separated client IDs"></label>
     <label class="op-check"><input type="checkbox" name="hasHumanUsers" checked><span>Used by people</span></label>
